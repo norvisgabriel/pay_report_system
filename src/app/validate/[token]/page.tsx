@@ -47,9 +47,6 @@ export default async function ValidateReceiptPage({ params }: { params: { token:
     ...(payment.bankName ? [{ label: "Banco", value: payment.bankName }] : []),
     { label: "Fecha de pago", value: formatDate(payment.paymentDate) },
     { label: "Validado", value: formatDate(payment.approvedAt!) },
-    ...(receipt.validUntil
-      ? [{ label: "Válido hasta", value: formatDate(receipt.validUntil) }]
-      : []),
   ];
 
   return (
