@@ -48,8 +48,8 @@
 
 @media print {
   @page {
-    size: A4;
-    margin: 1cm;
+    size: 80mm auto;
+    margin: 0;
   }
 
   * {
@@ -57,8 +57,13 @@
     -webkit-print-color-adjust: exact !important;
   }
 
+  /* Elimina alturas fijas para evitar la segunda hoja en blanco */
+  html,
   body {
+    height: auto !important;
+    min-height: unset !important;
     background: white !important;
+    overflow: hidden !important;
   }
 
   header,
@@ -74,28 +79,38 @@
     align-items: flex-start !important;
     background: white !important;
     min-height: unset !important;
+    height: auto !important;
     padding: 0 !important;
   }
 
-  #receipt {
-    width: 300px !important;
-    max-width: 300px !important;
-    box-shadow: none !important;
-    border: 1px solid #d1d5db !important;
-    page-break-inside: avoid;
-    margin-left: auto !important;
-    margin-right: auto !important;
+  main {
+    min-height: unset !important;
+    height: auto !important;
+    padding: 0 !important;
   }
 
-  .print-only {
-    display: block !important;
-  }
-
-  /* Center the receipt within its wrapper when all other sections are hidden */
   main > div {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
+    height: auto !important;
+    min-height: unset !important;
+  }
+
+  #receipt {
+    width: 76mm !important;
+    max-width: 76mm !important;
+    box-shadow: none !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin: 4mm auto !important;
+    overflow: hidden !important;
+  }
+
+  .print-only {
+    display: block !important;
   }
 
   a[href]::after {

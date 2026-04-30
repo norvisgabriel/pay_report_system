@@ -125,22 +125,28 @@ export default async function AdminPaymentDetailPage({ params }: { params: { id:
 
           {/* ── Solo al imprimir: recibo completo con datos + QR ── */}
           <div className="print-only text-left">
-            {/* Encabezado */}
-            <div className="text-center mb-3 pb-2 border-b border-gray-200">
-              <p className="font-bold text-sm">{APP}</p>
-              <p className="text-xs text-green-700 font-semibold mt-0.5">✓ Pago Aprobado</p>
+            {/* Encabezado índigo */}
+            <div className="text-white text-center py-3 px-4 -mx-6 -mt-6 mb-3"
+              style={{ background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)" }}
+            >
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">{APP}</p>
+              <p className="text-[9px] font-semibold mt-0.5 opacity-90">✓ APROBADO</p>
+              {/* Monto destacado */}
+              <p className="text-2xl font-bold mt-1 leading-none">
+                {formatCurrency(Number(payment.amount), "USD")}
+              </p>
+              {payment.localAmount && (
+                <p className="text-[10px] opacity-80 mt-0.5">
+                  Bs. {Number(payment.localAmount).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              )}
             </div>
 
             {/* Datos del pago */}
-            <div className="space-y-1.5 mb-3">
+            <div className="space-y-1 mb-2 px-1">
               {[
                 { label: "Representante",  value: payment.user.name },
                 { label: "Campaña",        value: payment.campaign.name },
-                { label: "Monto",          value: formatCurrency(Number(payment.amount), "USD") },
-                ...(payment.localAmount ? [{
-                  label: "Bolívares",
-                  value: `Bs. ${Number(payment.localAmount).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-                }] : []),
                 { label: "Método de Pago", value: PAYMENT_METHODS.find((m) => m.value === payment.method)?.label ?? payment.method },
                 ...(payment.reference ? [{ label: "Referencia", value: payment.reference }] : []),
                 ...(payment.bankName  ? [{ label: "Banco",      value: payment.bankName  }] : []),
@@ -148,7 +154,7 @@ export default async function AdminPaymentDetailPage({ params }: { params: { id:
                 { label: "Validado",       value: formatDate(payment.approvedAt!) },
                 ...(payment.receipt.validUntil ? [{ label: "Válido hasta", value: formatDate(payment.receipt.validUntil) }] : []),
               ].map(({ label, value }) => (
-                <div key={label} className="flex justify-between gap-3 text-xs border-b border-gray-100 pb-1">
+                <div key={label} className="flex justify-between gap-3 text-[10px] border-b border-gray-100 pb-1">
                   <span className="text-gray-400 shrink-0">{label}</span>
                   <span className="font-medium text-gray-800 text-right">{value}</span>
                 </div>
@@ -156,19 +162,28 @@ export default async function AdminPaymentDetailPage({ params }: { params: { id:
             </div>
 
             {/* Separador perforado */}
-            <div className="border-t-2 border-dashed border-gray-300 my-3" />
+            <div className="border-t-2 border-dashed border-gray-300 my-2" />
 
             {/* QR */}
-            <div className="text-center">
+            <div className="text-center pb-1">
               <Image
                 src={qrDataUrl}
                 alt="Código QR del recibo"
-                width={160}
-                height={160}
+                width={120}
+                height={120}
                 className="mx-auto"
               />
-              <p className="text-[9px] text-gray-400 mt-1 uppercase tracking-widest">ID de verificación</p>
-              <p className="font-mono text-[9px] text-gray-400 break-all mt-0.5 px-2">{payment.receipt.token}</p>
+              <p className="text-[9px] text-gray-400 mt-1">Escanea para verificar autenticidad</p>
+              <p className="font-mono text-[8px] text-gray-300 break-all mt-0.5 px-2">{payment.receipt.token}</p>
+            </div>
+
+            {/* Separador perforado */}
+            <div className="border-t-2 border-dashed border-gray-300 my-2" />
+
+            {/* Mensaje de gracias */}
+            <div className="text-center py-2">
+              <p className="text-xs font-semibold text-indigo-700">¡Gracias por tu pago!</p>
+              <p className="text-[9px] text-gray-400 mt-0.5">Este recibo es válido como comprobante oficial.</p>
             </div>
           </div>
 
