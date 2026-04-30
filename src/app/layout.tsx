@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     default: process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport",
     template: `%s | ${process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport"}`,
   },
-  description: "Payment reporting and validation system",
+  description: "Sistema de reporte y validación de pagos",
   viewport: "width=device-width, initial-scale=1",
 };
 
