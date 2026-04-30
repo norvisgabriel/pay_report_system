@@ -4,8 +4,8 @@ import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: {
-    default: process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport",
-    template: `%s | ${process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport"}`,
+    default: process.env.NEXT_PUBLIC_APP_NAME ?? "Payment Report",
+    template: `%s | ${process.env.NEXT_PUBLIC_APP_NAME ?? "Payment Report"}`,
   },
   description: "Sistema de reporte y validación de pagos",
   viewport: "width=device-width, initial-scale=1",

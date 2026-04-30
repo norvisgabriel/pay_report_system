@@ -11,7 +11,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { formatCurrency, formatDate, PAYMENT_METHODS } from "@/lib/utils";
 import { generateReceiptQR } from "@/lib/qr";
 
-const APP = process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport";
+const APP = process.env.NEXT_PUBLIC_APP_NAME ?? "Payment Report";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
 const WA_ICON = (

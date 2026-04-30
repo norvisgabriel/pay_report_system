@@ -5,7 +5,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
-const APP = process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport";
+const APP = process.env.NEXT_PUBLIC_APP_NAME ?? "Payment Report";
 
 const METHOD_LABELS: Record<string, string> = {
   efectivo:      "Efectivo en Caja",

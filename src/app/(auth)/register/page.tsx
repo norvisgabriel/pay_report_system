@@ -46,7 +46,7 @@ export default function RegisterPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-indigo-300/60">
-          © {new Date().getFullYear()} {process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport"} · Todos los derechos reservados
+          © {new Date().getFullYear()} {process.env.NEXT_PUBLIC_APP_NAME ?? "Payment Report"} · Todos los derechos reservados
         </p>
       </div>
     </main>

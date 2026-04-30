@@ -42,7 +42,7 @@ export function Navbar({ isAdmin }: NavbarProps) {
               </svg>
             </div>
             <span className="font-semibold text-gray-900 hidden sm:block">
-              {process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport"}
+              {process.env.NEXT_PUBLIC_APP_NAME ?? "Payment Report"}
             </span>
           </Link>
 

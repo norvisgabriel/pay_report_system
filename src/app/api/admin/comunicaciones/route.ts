@@ -8,8 +8,8 @@ import { prisma } from "@/lib/prisma";
 import { resend } from "@/lib/resend";
 import { sendSMS } from "@/lib/twilio";
 
-const FROM = `${process.env.RESEND_FROM_NAME ?? "PayReport"} <${process.env.RESEND_FROM_EMAIL ?? "noreply@example.com"}>`;
-const APP = process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport";
+const FROM = `${process.env.RESEND_FROM_NAME ?? "Payment Report"} <${process.env.RESEND_FROM_EMAIL ?? "noreply@example.com"}>`;
+const APP = process.env.NEXT_PUBLIC_APP_NAME ?? "Payment Report";
 
 const schema = z.object({
   campaignId: z.string().cuid(),

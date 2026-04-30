@@ -36,7 +36,7 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight">
-            {process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport"}
+            {process.env.NEXT_PUBLIC_APP_NAME ?? "Payment Report"}
           </h1>
           <p className="mt-1 text-sm text-indigo-200">Ingresa a tu cuenta</p>
         </div>
@@ -48,7 +48,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-indigo-300/60">
-          © {new Date().getFullYear()} {process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport"} · Todos los derechos reservados
+          © {new Date().getFullYear()} {process.env.NEXT_PUBLIC_APP_NAME ?? "Payment Report"} · Todos los derechos reservados
         </p>
       </div>
     </main>

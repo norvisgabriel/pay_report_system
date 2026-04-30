@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { StatusBadge } from "@/components/ui/badge";
 import { formatCurrency, formatDate, PAYMENT_METHODS } from "@/lib/utils";
 
-const APP = process.env.NEXT_PUBLIC_APP_NAME ?? "PayReport";
+const APP = process.env.NEXT_PUBLIC_APP_NAME ?? "Payment Report";
 import { ValidateActions } from "@/components/admin/validate-actions";
 import { AdminReceiptActions } from "@/components/admin/receipt-actions";
 import { generateReceiptQR } from "@/lib/qr";
