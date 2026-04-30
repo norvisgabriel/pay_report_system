@@ -4,11 +4,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import * as XLSX from "xlsx";
 
 const METHOD_LABELS: Record<string, string> = {
-  efectivo: "Efectivo",
-  transferencia: "Transferencia",
-  pago_movil: "Pago Movil",
+  efectivo:      "Efectivo en Caja",
+  efectivo_caja: "Efectivo en Caja",
+  transferencia: "Transferencia Bancaria",
+  transfer:      "Transferencia Bancaria",
+  pago_movil:    "Pago Móvil",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  APPROVED: "Aprobado",
+  PENDING:  "Pendiente",
+  REJECTED: "Rechazado",
 };
 
 export async function GET(req: NextRequest) {
@@ -18,50 +27,105 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const desde = searchParams.get("desde") ? new Date(searchParams.get("desde")!) : undefined;
-  const hasta = searchParams.get("hasta")
+  const desde      = searchParams.get("desde") ? new Date(searchParams.get("desde")!) : undefined;
+  const hasta      = searchParams.get("hasta")
     ? new Date(new Date(searchParams.get("hasta")!).setHours(23, 59, 59, 999))
     : undefined;
   const campaignId = searchParams.get("campaignId") || undefined;
+  const status     = searchParams.get("status");
+  const method     = searchParams.get("method") || undefined;
+
+  const statusFilter = status && status !== "ALL"
+    ? { status: status as "APPROVED" | "PENDING" | "REJECTED" }
+    : {};
 
   const where = {
-    status: "APPROVED" as const,
-    ...(desde || hasta ? { approvedAt: { ...(desde ? { gte: desde } : {}), ...(hasta ? { lte: hasta } : {}) } } : {}),
+    ...statusFilter,
+    ...(method ? { method } : {}),
     ...(campaignId ? { campaignId } : {}),
+    ...(desde || hasta
+      ? { approvedAt: { ...(desde ? { gte: desde } : {}), ...(hasta ? { lte: hasta } : {}) } }
+      : {}),
   };
 
   const payments = await prisma.payment.findMany({
     where,
     include: {
-      user: { select: { name: true, email: true, phone: true } },
+      user:     { select: { name: true, email: true, phone: true } },
       campaign: { select: { name: true } },
     },
-    orderBy: { approvedAt: "desc" },
+    orderBy: { createdAt: "desc" },
   });
 
-  const header = "Nombre,Correo,Telefono,Campaña,Metodo,Monto USD,Monto Bs,Referencia,Banco,Fecha Pago,Fecha Aprobacion\n";
-  const rows = payments.map((p) =>
-    [
-      `"${p.user.name}"`,
-      `"${p.user.email}"`,
-      `"${p.user.phone ?? ""}"`,
-      `"${p.campaign.name}"`,
-      `"${METHOD_LABELS[p.method] ?? p.method}"`,
-      Number(p.amount).toFixed(2),
-      p.localAmount ? Number(p.localAmount).toFixed(2) : "",
-      `"${p.reference ?? ""}"`,
-      `"${p.bankName ?? ""}"`,
-      p.paymentDate.toISOString().slice(0, 10),
-      p.approvedAt ? p.approvedAt.toISOString().slice(0, 10) : "",
-    ].join(",")
-  ).join("\n");
+  // Construir filas para Excel
+  const rows = payments.map((p, i) => ({
+    "#":               i + 1,
+    "Representante":   p.user.name,
+    "Correo":          p.user.email,
+    "Teléfono":        p.user.phone ?? "",
+    "Campaña":         p.campaign.name,
+    "Método de Pago":  METHOD_LABELS[p.method] ?? p.method,
+    "Estado":          STATUS_LABELS[p.status] ?? p.status,
+    "Monto USD":       Number(p.amount),
+    "Monto Bs.":       p.localAmount ? Number(p.localAmount) : "",
+    "Tasa (Bs/USD)":   p.exchangeRate ? Number(p.exchangeRate) : "",
+    "Referencia":      p.reference ?? "",
+    "Banco":           p.bankName ?? "",
+    "Fecha de Pago":   p.paymentDate.toISOString().slice(0, 10),
+    "Fecha Aprobación": p.approvedAt ? p.approvedAt.toISOString().slice(0, 10) : "",
+  }));
 
-  const csv = "﻿" + header + rows; // BOM for Excel UTF-8
+  // Fila de totales
+  const totalUSD = payments.filter(p => p.status === "APPROVED").reduce((s, p) => s + Number(p.amount), 0);
+  const totalVES = payments.filter(p => p.status === "APPROVED").reduce((s, p) => s + Number(p.localAmount ?? 0), 0);
 
-  return new NextResponse(csv, {
+  rows.push({
+    "#":               "" as unknown as number,
+    "Representante":   `TOTAL APROBADOS (${payments.filter(p => p.status === "APPROVED").length})`,
+    "Correo":          "",
+    "Teléfono":        "",
+    "Campaña":         "",
+    "Método de Pago":  "",
+    "Estado":          "",
+    "Monto USD":       totalUSD,
+    "Monto Bs.":       totalVES || "",
+    "Tasa (Bs/USD)":   "",
+    "Referencia":      "",
+    "Banco":           "",
+    "Fecha de Pago":   "",
+    "Fecha Aprobación": "",
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  // Anchos de columna
+  ws["!cols"] = [
+    { wch: 4  },  // #
+    { wch: 25 },  // Representante
+    { wch: 28 },  // Correo
+    { wch: 14 },  // Teléfono
+    { wch: 22 },  // Campaña
+    { wch: 22 },  // Método
+    { wch: 12 },  // Estado
+    { wch: 12 },  // Monto USD
+    { wch: 14 },  // Monto Bs.
+    { wch: 14 },  // Tasa
+    { wch: 14 },  // Referencia
+    { wch: 14 },  // Banco
+    { wch: 14 },  // Fecha Pago
+    { wch: 16 },  // Fecha Aprobación
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Pagos");
+
+  const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+  const filename = `reporte-pagos-${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+  return new NextResponse(buf, {
     headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="reporte-pagos-${new Date().toISOString().slice(0, 10)}.csv"`,
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "Content-Disposition": `attachment; filename="${filename}"`,
     },
   });
 }
