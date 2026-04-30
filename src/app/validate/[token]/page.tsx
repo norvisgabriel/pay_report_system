@@ -60,25 +60,40 @@ export default async function ValidateReceiptPage({ params }: { params: { token:
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
 
           {/* Encabezado */}
-          <div className={`px-6 py-5 text-white text-center ${isExpired ? "bg-amber-500" : "bg-green-600"}`}>
-            <div className="flex items-center justify-center gap-2 mb-1">
-              {isExpired ? (
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                </svg>
-              ) : (
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              )}
-              <span className="font-bold tracking-wide text-sm uppercase">
-                {isExpired ? "Pago Registrado" : "Pago Verificado"}
+          <div
+            className="px-6 py-5 text-white text-center"
+            style={isExpired
+              ? { background: "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)" }
+              : { background: "linear-gradient(135deg, #4338ca 0%, #6366f1 100%)" }
+            }
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold uppercase tracking-widest opacity-80">{APP}</span>
+              <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                isExpired ? "bg-amber-600/50" : "bg-white/20"
+              }`}>
+                {isExpired ? (
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01" />
+                  </svg>
+                ) : (
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+                {isExpired ? "Vencido" : "Aprobado"}
               </span>
             </div>
-            <p className={`text-xs font-medium ${isExpired ? "text-amber-100" : "text-green-100"}`}>
-              {isExpired
-                ? "Sin validez para el próximo año escolar"
-                : `Recibo oficial · ${APP}`}
+            <p className="text-3xl font-bold leading-none">
+              {formatCurrency(Number(payment.amount), "USD")}
+            </p>
+            {payment.localAmount && (
+              <p className="text-sm opacity-80 mt-1">
+                Bs. {Number(payment.localAmount).toLocaleString("es-VE", { minimumFractionDigits: 2 })}
+              </p>
+            )}
+            <p className="text-xs opacity-70 mt-2">
+              {isExpired ? "Sin validez para el próximo año escolar" : "Recibo oficial verificado"}
             </p>
           </div>
 
@@ -91,6 +106,16 @@ export default async function ValidateReceiptPage({ params }: { params: { token:
               </div>
             ))}
           </div>
+
+          {/* Mensaje de gracias */}
+          {!isExpired && (
+            <div className="px-5 py-3 text-center border-t border-gray-100"
+              style={{ background: "linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%)" }}
+            >
+              <p className="text-sm font-semibold text-indigo-700">¡Gracias por tu pago!</p>
+              <p className="text-xs text-indigo-400 mt-0.5">Este recibo es válido como comprobante oficial.</p>
+            </div>
+          )}
 
           {/* Pie — token de verificación */}
           <div className="border-t border-dashed border-gray-200 bg-gray-50 px-5 py-3 text-center">
