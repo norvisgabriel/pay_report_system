@@ -39,12 +39,21 @@ export async function GET(req: NextRequest) {
     ? { status: status as "APPROVED" | "PENDING" | "REJECTED" }
     : {};
 
+  const METHOD_ALIASES: Record<string, string[]> = {
+    efectivo:      ["efectivo", "efectivo_caja"],
+    transferencia: ["transferencia", "transfer"],
+    pago_movil:    ["pago_movil"],
+  };
+  const methodFilter = method
+    ? { method: { in: METHOD_ALIASES[method] ?? [method] } }
+    : {};
+
   const where = {
     ...statusFilter,
-    ...(method ? { method } : {}),
+    ...methodFilter,
     ...(campaignId ? { campaignId } : {}),
     ...(desde || hasta
-      ? { approvedAt: { ...(desde ? { gte: desde } : {}), ...(hasta ? { lte: hasta } : {}) } }
+      ? { paymentDate: { ...(desde ? { gte: desde } : {}), ...(hasta ? { lte: hasta } : {}) } }
       : {}),
   };
 

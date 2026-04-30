@@ -52,10 +52,21 @@ export default async function AdminReportesPage({
     ? { status: searchParams.status as "APPROVED" | "PENDING" | "REJECTED" }
     : {};
 
-  const methodFilter = searchParams.method ? { method: searchParams.method } : {};
+  // Maneja aliases: "efectivo" incluye también "efectivo_caja", "transferencia" incluye "transfer"
+  const METHOD_ALIASES: Record<string, string[]> = {
+    efectivo:      ["efectivo", "efectivo_caja"],
+    transferencia: ["transferencia", "transfer"],
+    pago_movil:    ["pago_movil"],
+  };
+  const methodFilter = searchParams.method
+    ? { method: { in: METHOD_ALIASES[searchParams.method] ?? [searchParams.method] } }
+    : {};
+
   const campaignFilter = searchParams.campaignId ? { campaignId: searchParams.campaignId } : {};
+
+  // Usa paymentDate para que funcione con todos los estados (no solo aprobados)
   const dateFilter = desde || hasta
-    ? { approvedAt: { ...(desde ? { gte: desde } : {}), ...(hasta ? { lte: hasta } : {}) } }
+    ? { paymentDate: { ...(desde ? { gte: desde } : {}), ...(hasta ? { lte: hasta } : {}) } }
     : {};
 
   const where = { ...statusFilter, ...methodFilter, ...campaignFilter, ...dateFilter };
