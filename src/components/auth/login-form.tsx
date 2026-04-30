@@ -98,7 +98,7 @@ export function LoginForm() {
         />
 
         <Button type="submit" loading={isSubmitting} className="w-full">
-          Iniciar sesión
+          {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
         </Button>
 
         <p className="text-center text-sm text-gray-600">

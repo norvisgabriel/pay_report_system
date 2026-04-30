@@ -24,8 +24,10 @@ const schema = z.object({
     if (!data.reference?.trim()) ctx.addIssue({ code: "custom", path: ["reference"], message: "El número de referencia es requerido" });
   }
   if (data.method === "pago_movil") {
-    if (!data.phoneNumber?.trim()) ctx.addIssue({ code: "custom", path: ["phoneNumber"], message: "El número de teléfono es requerido" });
     if (!data.bankName?.trim()) ctx.addIssue({ code: "custom", path: ["bankName"], message: "El banco es requerido" });
+    const phone = data.phoneNumber?.replace(/\D/g, "") ?? "";
+    if (!phone) ctx.addIssue({ code: "custom", path: ["phoneNumber"], message: "El número de teléfono es requerido" });
+    else if (phone.length < 10 || phone.length > 11) ctx.addIssue({ code: "custom", path: ["phoneNumber"], message: "Ingresa un número válido (ej: 04141234567)" });
   }
 });
 
@@ -68,7 +70,10 @@ export function PaymentForm({ campaign, exchangeRate, exchangeRateSource, campai
     handleSubmit,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
+
 
   const method = watch("method");
   const vesAmount = exchangeRate ? (campaign.price * exchangeRate).toFixed(2) : null;
@@ -114,7 +119,7 @@ export function PaymentForm({ campaign, exchangeRate, exchangeRateSource, campai
         method: data.method,
         bankName: data.bankName || undefined,
         reference: data.reference || undefined,
-        phoneNumber: data.phoneNumber || undefined,
+        phoneNumber: data.phoneNumber?.replace(/\D/g, "") || undefined,
         paymentDate: new Date(data.paymentDate).toISOString(),
         imageUrl,
         imagePublicId,
@@ -130,7 +135,15 @@ export function PaymentForm({ campaign, exchangeRate, exchangeRateSource, campai
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form
+      onSubmit={handleSubmit(onSubmit, () => {
+        setTimeout(() => {
+          const el = document.querySelector(".text-red-600");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 50);
+      })}
+      className="space-y-6"
+    >
       {/* Resumen del monto */}
       <div className="rounded-xl bg-primary-50 border border-primary-200 p-4">
         <p className="text-xs font-medium text-primary-600 uppercase tracking-wide mb-3">
@@ -216,8 +229,9 @@ export function PaymentForm({ campaign, exchangeRate, exchangeRateSource, campai
           <Input
             label="Número de teléfono asociado"
             required
-            placeholder="Ej: 0414-1234567"
-            type="tel"
+            placeholder="Ej: 04141234567"
+            type="text"
+            inputMode="numeric"
             {...register("phoneNumber")}
             error={errors.phoneNumber?.message}
           />
@@ -291,7 +305,7 @@ export function PaymentForm({ campaign, exchangeRate, exchangeRateSource, campai
       </div>
 
       <Button type="submit" loading={isSubmitting} className="w-full" disabled={!method}>
-        Reportar Pago
+        {isSubmitting ? "Procesando..." : "Reportar Pago"}
       </Button>
     </form>
   );
