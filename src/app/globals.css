@@ -48,8 +48,8 @@
 
 @media print {
   @page {
-    size: 80mm auto;
-    margin: 0;
+    size: A4 portrait;
+    margin: 1.5cm;
   }
 
   * {
@@ -98,14 +98,15 @@
   }
 
   #receipt {
-    width: 76mm !important;
-    max-width: 76mm !important;
+    width: 340px !important;
+    max-width: 340px !important;
     box-shadow: none !important;
     border: 1px solid #d1d5db !important;
     border-radius: 8px !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    margin: 4mm auto !important;
+    break-before: avoid !important;
+    margin: 0 auto !important;
     overflow: hidden !important;
   }
 
