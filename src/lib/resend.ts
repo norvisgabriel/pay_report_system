@@ -162,4 +162,27 @@ export async function sendDailySummaryEmail(
   });
 }
 
+export async function sendPasswordResetEmail(to: string, name: string, resetUrl: string) {
+  await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `[${APP}] Restablecer contraseña`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+        <h2 style="color:#4f46e5">Restablecer Contraseña</h2>
+        <p>Hola ${name},</p>
+        <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en <strong>${APP}</strong>.</p>
+        <p>Haz clic en el botón de abajo para crear una nueva contraseña. Este enlace es válido por <strong>1 hora</strong>.</p>
+        <p>
+          <a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#4f46e5;color:white;text-decoration:none;border-radius:6px">
+            Restablecer Contraseña
+          </a>
+        </p>
+        <p>Si no solicitaste este cambio, puedes ignorar este correo. Tu contraseña no cambiará.</p>
+        <p style="color:#6b7280;font-size:.875rem">Este enlace expira en 1 hora. No respondas a este correo.</p>
+      </div>
+    `,
+  });
+}
+
 export { resend };

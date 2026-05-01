@@ -88,14 +88,21 @@ export function LoginForm() {
           error={errors.email?.message}
         />
 
-        <Input
-          label="Contraseña"
-          type="password"
-          autoComplete="current-password"
-          required
-          {...register("password")}
-          error={errors.password?.message}
-        />
+        <div className="space-y-1">
+          <Input
+            label="Contraseña"
+            type="password"
+            autoComplete="current-password"
+            required
+            {...register("password")}
+            error={errors.password?.message}
+          />
+          <div className="text-right">
+            <Link href="/forgot-password" className="text-xs text-indigo-600 hover:text-indigo-700">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
+        </div>
 
         <Button type="submit" loading={isSubmitting} className="w-full">
           {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
