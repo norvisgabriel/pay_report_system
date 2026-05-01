@@ -87,7 +87,7 @@ export async function sendPaymentRejectedEmail(
         <p>Hola ${name},</p>
         <p>Tu pago${reference ? ` (ref: <strong>${reference}</strong>)` : ""} no pudo ser aprobado.</p>
         <p><strong>Motivo:</strong> ${reason}</p>
-        <p>Por favor inicia sesión y envía un reporte corregido si es necesario.</p>
+        <p>Ya puedes ingresar al sistema y reportar un nuevo comprobante corregido para la misma campaña.</p>
         <p style="color:#6b7280;font-size:.875rem">No respondas a este correo.</p>
       </div>
     `,

@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session) return null;
 
-  const [payments, campaigns, stats] = await Promise.all([
+  const [payments, campaigns, stats, userCampaignPayments] = await Promise.all([
     prisma.payment.findMany({
       where: { userId: session.user.id },
       include: { campaign: true },
@@ -28,7 +28,24 @@ export default async function DashboardPage() {
       where: { userId: session.user.id },
       _count: true,
     }),
+    prisma.payment.findMany({
+      where: { userId: session.user.id, campaign: { isActive: true } },
+      select: { campaignId: true, status: true },
+    }),
   ]);
+
+  // Build per-campaign status: PENDING > APPROVED > REJECTED
+  const campaignStatus: Record<string, "PENDING" | "APPROVED" | "REJECTED"> = {};
+  for (const p of userCampaignPayments) {
+    const cur = campaignStatus[p.campaignId];
+    if (p.status === "PENDING") {
+      campaignStatus[p.campaignId] = "PENDING";
+    } else if (p.status === "APPROVED" && cur !== "PENDING") {
+      campaignStatus[p.campaignId] = "APPROVED";
+    } else if (!cur) {
+      campaignStatus[p.campaignId] = "REJECTED";
+    }
+  }
 
   const countByStatus = Object.fromEntries(stats.map((s) => [s.status, s._count]));
   const total = stats.reduce((acc, s) => acc + s._count, 0);
@@ -49,19 +66,38 @@ export default async function DashboardPage() {
       {campaigns.length > 0 && (
         <div className="card p-4">
           <h2 className="text-sm font-semibold text-gray-700 mb-3">Campaña Activa</h2>
-          {campaigns.map((c) => (
-            <div key={c.id} className="flex items-center justify-between rounded-lg bg-primary-50 px-3 py-3">
-              <div>
-                <p className="text-sm font-semibold text-primary-900">{c.name}</p>
-                <p className="text-xs text-primary-600 mt-0.5">
-                  Monto: <strong>{formatCurrency(Number(c.price), "USD")}</strong> · {formatDate(c.startDate)} – {formatDate(c.endDate)}
-                </p>
+          {campaigns.map((c) => {
+            const status = campaignStatus[c.id];
+            return (
+              <div key={c.id} className="flex items-center justify-between rounded-lg bg-primary-50 px-3 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-primary-900">{c.name}</p>
+                  <p className="text-xs text-primary-600 mt-0.5">
+                    Monto: <strong>{formatCurrency(Number(c.price), "USD")}</strong> · {formatDate(c.startDate)} – {formatDate(c.endDate)}
+                  </p>
+                </div>
+                {status === "PENDING" && (
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-yellow-100 px-3 py-1.5 text-xs font-medium text-yellow-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-yellow-500 animate-pulse" />
+                    En revisión
+                  </span>
+                )}
+                {status === "APPROVED" && (
+                  <span className="inline-flex items-center gap-1 rounded-lg bg-green-100 px-3 py-1.5 text-xs font-medium text-green-700">
+                    ✓ Aprobado
+                  </span>
+                )}
+                {(status === "REJECTED" || !status) && (
+                  <Link
+                    href={`/payments/new?campaignId=${c.id}`}
+                    className="btn-primary text-xs py-1.5 px-3"
+                  >
+                    {status === "REJECTED" ? "Reintentar →" : "Reportar →"}
+                  </Link>
+                )}
               </div>
-              <Link href="/payments/new" className="btn-primary text-xs py-1.5 px-3">
-                Reportar →
-              </Link>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

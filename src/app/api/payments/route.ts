@@ -76,6 +76,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Campaña no encontrada o inactiva" }, { status: 404 });
     }
 
+    const activePayment = await prisma.payment.findFirst({
+      where: {
+        userId: session.user.id,
+        campaignId: data.campaignId,
+        status: { in: ["PENDING", "APPROVED"] },
+      },
+    });
+    if (activePayment) {
+      const msg =
+        activePayment.status === "APPROVED"
+          ? "Ya tienes un pago aprobado para esta campaña"
+          : "Ya tienes un pago en revisión para esta campaña";
+      return NextResponse.json({ error: msg }, { status: 409 });
+    }
+
     const isCash = data.method === "efectivo";
     const now = new Date();
 

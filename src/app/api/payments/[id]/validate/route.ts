@@ -32,6 +32,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     if (payment.status !== "PENDING") {
       return NextResponse.json({ error: "Payment already processed" }, { status: 400 });
     }
+    if (action === "REJECTED" && !adminNotes?.trim()) {
+      return NextResponse.json({ error: "El motivo del rechazo es requerido" }, { status: 400 });
+    }
 
     // Update payment + optionally create Receipt in one transaction
     const result = await prisma.$transaction(async (tx) => {
